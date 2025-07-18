@@ -1,4 +1,4 @@
-from Plugins.DataProvider.classes import Node
+from Plugins.DataProvider.classes import *
 import orjson
 import json
 import os
@@ -31,3 +31,35 @@ def read_nodes() -> list[Node]:
 
     del file
     return nodes
+
+def read_navigation() -> list[NavigationEntry]:
+    path = find_category_file("graph")
+    if path is None: return []
+    
+    entries: list[NavigationEntry] = []
+    #file = json.load(open(path, "r"))
+    file = orjson.loads(open(path, "rb").read())
+    for entry in file:
+        uid = entry[0]
+        forward_nodes = [
+            NavigationNode(
+                node["nodeId"],
+                node["distance"],
+                node["direction"],
+                node.get("isOneLaneRoad", False)
+            ) 
+            for node in entry[1]["forward"]
+        ]
+        backward_nodes = [
+            NavigationNode(
+                node["nodeId"],
+                node["distance"],
+                node["direction"],
+                node.get("isOneLaneRoad", False)
+            )
+            for node in entry[1]["backward"]
+        ]
+        entries.append(NavigationEntry(uid, forward_nodes, backward_nodes))
+
+    del file
+    return entries

@@ -1,7 +1,8 @@
 from Plugins.DataProvider.utils import math as umath
+from Plugins.DataProvider.classes.navigation import NavigationEntry
 
 class Node:
-    __slots__ = ['uid', 'x', 'y', 'z', 'rotationQuat', '_euler', 'forward_item_uid', 'backward_item_uid', '_navigation']
+    __slots__ = ['uid', 'x', 'y', 'z', 'rotationQuat', '_euler', 'forward_item_uid', 'backward_item_uid', 'navigation']
     
     uid: str
     x: float
@@ -11,7 +12,7 @@ class Node:
     _euler: list[float]
     forward_item_uid: str
     backward_item_uid: str
-    # _navigation: NavigationEntry
+    navigation: NavigationEntry
 
     def __init__(self, uid: int | str, x: float, y: float, z: float, rotationQuat: list[float], 
                  forward_item_uid: int | str, backward_item_uid: int | str):
@@ -27,19 +28,13 @@ class Node:
         self.forward_item_uid = forward_item_uid
         self.backward_item_uid = backward_item_uid
         
-        self._navigation = None
+        self.navigation = None
         
     @property
     def euler(self) -> list[float]:
         if self._euler is None:
             self._euler = umath.quat_to_euler(self.rotationQuat)
         return self._euler
-        
-    # @property
-    # def navigation(self) -> NavigationEntry:
-    #     if self._navigation is None:
-    #         self._navigation = data.map.get_navigation_entry(self.uid)
-    #     return self._navigation
 
     def json(self) -> dict:
         return {

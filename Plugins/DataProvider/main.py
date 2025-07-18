@@ -37,7 +37,13 @@ class Plugin(ETS2LAPlugin):
         if not self.nodes:
             start = memory.read_memory_usage()
             nodes = reader.read_nodes()
+            
+            nav = reader.read_navigation()
             self.nodes = {node.uid: node for node in nodes}
+            for entry in nav:
+                self.nodes[entry.uid].navigation = entry
+            del nav
+            
             print(f"Loaded {len(self.nodes)} nodes from data provider.")
             end = memory.read_memory_usage()
             print(f"Memory usage: {end - start:.2f} MB")

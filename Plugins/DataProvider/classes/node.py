@@ -2,7 +2,7 @@ from Plugins.DataProvider.utils import math as umath
 from Plugins.DataProvider.classes.navigation import NavigationEntry
 
 class Node:
-    __slots__ = ['uid', 'x', 'y', 'z', 'rotationQuat', '_euler', 'forward_item_uid', 'backward_item_uid', 'navigation']
+    __slots__ = ['uid', 'x', 'y', 'z', 'rotationQuat', '_euler', 'forward_item_uid', 'backward_item_uid']
     
     uid: str
     x: float
@@ -12,7 +12,7 @@ class Node:
     _euler: list[float]
     forward_item_uid: str
     backward_item_uid: str
-    navigation: NavigationEntry
+    # navigation: NavigationEntry
 
     def __init__(self, uid: int | str, x: float, y: float, z: float, rotationQuat: list[float], 
                  forward_item_uid: int | str, backward_item_uid: int | str):
@@ -28,7 +28,7 @@ class Node:
         self.forward_item_uid = forward_item_uid
         self.backward_item_uid = backward_item_uid
         
-        self.navigation = None
+        # self.navigation = None
         
     @property
     def euler(self) -> list[float]:
@@ -45,4 +45,5 @@ class Node:
             "rotationQuat": self.rotationQuat,
             "forward_item_uid": self.forward_item_uid,
             "backward_item_uid": self.backward_item_uid,
+            # "navigation": self.navigation.json() if self.navigation else None
         }

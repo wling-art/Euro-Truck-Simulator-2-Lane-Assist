@@ -63,3 +63,49 @@ def read_navigation() -> list[NavigationEntry]:
 
     del file
     return entries
+
+def read_roads() -> list[Road]:
+    path = find_category_file("roads")
+    if path is None: return []
+    roads: list[Road] = []
+    file = orjson.loads(open(path, "rb").read())
+    for road in file:
+        roads.append(Road(
+            road["uid"],
+            road["x"],
+            road["y"],
+            bool(road.get("hidden", False)),
+            road["roadLookToken"],
+            road["startNodeUid"],
+            road["endNodeUid"],
+            road["length"],
+            road.get("maybeDivided", False),
+            [
+                Railing(
+                    railing["rightRailing"],
+                    railing["rightRailingOffset"],
+                    railing["leftRailing"],
+                    railing["leftRailingOffset"]
+                ) for railing in road.get("railings", [])
+            ]
+        ))
+
+    return roads
+
+def read_road_looks() -> dict[str, RoadLook]:
+    path = find_category_file("roadLooks")
+    if path is None: return {}
+    road_looks: dict[str, RoadLook] = {}
+    file = orjson.loads(open(path, "rb").read())
+    for road_look in file:
+        road_looks[road_look["token"]] = RoadLook(
+            road_look["token"],
+            road_look["name"],
+            road_look.get("lanesLeft", []),
+            road_look.get("lanesRight", []),
+            road_look.get("offset", 0),
+            road_look.get("shoulderSpaceRight", 0),
+            road_look.get("shoulderSpaceLeft", 0),
+        )
+
+    return road_looks

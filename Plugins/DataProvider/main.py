@@ -26,6 +26,7 @@ class Plugin(ETS2LAPlugin):
     ]
     
     nodes: dict[str, Node] = {}
+    roads: dict[str, Road] = {}
     
     def init(self) -> None:
         self.api = TruckSimAPI(self)
@@ -48,3 +49,22 @@ class Plugin(ETS2LAPlugin):
             end = memory.read_memory_usage()
             print(f"Memory usage: {end - start:.2f} MB")
             rich.print_json(data=self.nodes[next(iter(self.nodes))].json())
+            
+        if not self.roads:
+            start = memory.read_memory_usage()
+            roads = reader.read_roads()
+            road_looks = reader.read_road_looks()
+            for road in roads:
+                if road.road_look_token in road_looks:
+                    road.road_look = road_looks[road.road_look_token]
+                else:
+                    road.road_look = RoadLook(road.road_look_token, "Unknown", [], [], None, None, None)
+                    
+            self.roads = {road.uid: road for road in roads}
+            del roads
+            del road_looks
+            
+            print(f"Loaded {len(self.roads)} roads from data provider.")
+            end = memory.read_memory_usage()
+            print(f"Memory usage: {end - start:.2f} MB")
+            rich.print_json(data=self.roads[next(iter(self.roads))].json())

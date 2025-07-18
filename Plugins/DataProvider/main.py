@@ -1,7 +1,6 @@
-from ETS2LA.Plugin import *
 from ETS2LA.Utils.translator import _
+from ETS2LA.Plugin import *
 import rich
-import time
 
 from Modules.TruckSimAPI.main import Module as TruckSimAPI
 
@@ -26,7 +25,7 @@ class Plugin(ETS2LAPlugin):
         )
     ]
     
-    nodes: list[Node] = []
+    nodes: dict[str, Node] = {}
     
     def init(self) -> None:
         self.api = TruckSimAPI(self)
@@ -37,8 +36,9 @@ class Plugin(ETS2LAPlugin):
         
         if not self.nodes:
             start = memory.read_memory_usage()
-            self.nodes = reader.read_nodes()
+            nodes = reader.read_nodes()
+            self.nodes = {node.uid: node for node in nodes}
             print(f"Loaded {len(self.nodes)} nodes from data provider.")
             end = memory.read_memory_usage()
             print(f"Memory usage: {end - start:.2f} MB")
-            rich.print_json(data=self.nodes[0].json())
+            rich.print_json(data=self.nodes[next(iter(self.nodes))].json())

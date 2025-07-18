@@ -3,7 +3,7 @@ from scipy.spatial.transform import Rotation as R
 import numpy as np
 import math
 
-def DistanceBetweenPoints(p1: tuple[float, float] | tuple[float, float, float], p2: tuple[float, float] | tuple[float, float, float]) -> float:
+def distance_between(p1: tuple[float, float] | tuple[float, float, float], p2: tuple[float, float] | tuple[float, float, float]) -> float:
     """Get the distance between two points.
 
     :param tuple[float, float] | tuple[float, float, float] p1: Point 1.
@@ -15,7 +15,7 @@ def DistanceBetweenPoints(p1: tuple[float, float] | tuple[float, float, float], 
     else:
         return math.sqrt(math.pow(p2[0] - p1[0], 2) + math.pow(p2[1] - p1[1], 2) + math.pow(p2[2] - p1[2], 2))
     
-def LerpTuple(from_tuple: tuple[float, float] | tuple[float, float, float], to_tuple: tuple[float, float] | tuple[float, float, float], s: float) -> tuple[float, float] | tuple[float, float, float]:
+def lerp_tuple(from_tuple: tuple[float, float] | tuple[float, float, float], to_tuple: tuple[float, float] | tuple[float, float, float], s: float) -> tuple[float, float] | tuple[float, float, float]:
     """Lerp between two tuples.
 
     :param tuple[float, float] | tuple[float, float, float] from_tuple: Tuple to lerp from.
@@ -28,7 +28,7 @@ def LerpTuple(from_tuple: tuple[float, float] | tuple[float, float, float], to_t
     else:
         return ((1 - s) * from_tuple[0] + s * to_tuple[0], (1 - s) * from_tuple[1] + s * to_tuple[1], (1 - s) * from_tuple[2] + s * to_tuple[2])
     
-def TupleMiddle(t1: tuple[float, float] | tuple[float, float, float], t2: tuple[float, float] | tuple[float, float, float]) -> tuple[float, float] | tuple[float, float, float]:
+def tuple_middle(t1: tuple[float, float] | tuple[float, float, float], t2: tuple[float, float] | tuple[float, float, float]) -> tuple[float, float] | tuple[float, float, float]:
     """Get the middle point between two tuples.
 
     :param tuple[float, float] | tuple[float, float, float] t1: Tuple 1.
@@ -40,7 +40,7 @@ def TupleMiddle(t1: tuple[float, float] | tuple[float, float, float], t2: tuple[
     else:
         return ((t1[0] + t2[0]) / 2, (t1[1] + t2[1]) / 2, (t1[2] + t2[2]) / 2)
 
-def IsInBoundingBox(point: tuple[float, float], min_x: float, max_x: float, min_y: float, max_y: float) -> bool:
+def is_in_bounds(point: tuple[float, float], min_x: float, max_x: float, min_y: float, max_y: float) -> bool:
     """Check if a point is in a bounding box.
 
     :param tuple[float, float] point: Point to check.
@@ -52,7 +52,7 @@ def IsInBoundingBox(point: tuple[float, float], min_x: float, max_x: float, min_
     """
     return min_x <= point[0] <= max_x and min_y <= point[1] <= max_y
 
-def IsInFront(point: tuple[float, float] | tuple[float, float, float], truck_rotation: float, truck_position: tuple[float, float] | tuple[float, float, float]) -> bool:
+def is_in_front(point: tuple[float, float] | tuple[float, float, float], truck_rotation: float, truck_position: tuple[float, float] | tuple[float, float, float]) -> bool:
     """Will return True if a point is in front of the truck, False otherwise.
 
     :param tuple[float, float] | tuple[float, float, float] point: Point to check, must be either [x,z] or [x,y,z]
@@ -66,7 +66,7 @@ def IsInFront(point: tuple[float, float] | tuple[float, float, float], truck_rot
     angle = math.degrees(angle)
     return -90 < angle < 90
 
-def GetMostInDirection(points: list[tuple[float, float]] | list[tuple[float, float, float]], truck_rotation: float, truck_position: tuple[float, float] | tuple[float, float, float], direction: Literal["left", "straight", "right"] = "straight") -> int:
+def get_point_most_in_dir(points: list[tuple[float, float]] | list[tuple[float, float, float]], truck_rotation: float, truck_position: tuple[float, float] | tuple[float, float, float], direction: Literal["left", "straight", "right"] = "straight") -> int:
     """Find the index of the point that is most to the direction specified.
 
     :param list[tuple[float, float]] | list[tuple[float, float, float]] points: List of points to check.
@@ -77,7 +77,7 @@ def GetMostInDirection(points: list[tuple[float, float]] | list[tuple[float, flo
     """
     forward_vector = [-math.sin(truck_rotation), -math.cos(truck_rotation)]
     target_angle = 0 if direction == "straight" else 90 if direction == "right" else -90
-    forward_vector = RotateAroundPoint(forward_vector[0], forward_vector[1], math.radians(target_angle), 0, 0)
+    forward_vector = rotate_around(forward_vector[0], forward_vector[1], math.radians(target_angle), 0, 0)
     best_index = 0
     best_angle = 180
     for i, point in enumerate(points):
@@ -90,7 +90,7 @@ def GetMostInDirection(points: list[tuple[float, float]] | list[tuple[float, flo
     
     return best_index
 
-def InOut(s: float) -> float:
+def in_out(s: float) -> float:
     """InOut interpolation function.
 
     :param float s: Interpolation value.
@@ -98,7 +98,7 @@ def InOut(s: float) -> float:
     """
     return 3 * math.pow(s, 2) - 2 * math.pow(s, 3)
 
-def EaseOutInverted(s: float) -> float:
+def ease_in_out_inverted(s: float) -> float:
     """EaseOutInverted interpolation function.
 
     :param float s: Interpolation value.
@@ -106,7 +106,7 @@ def EaseOutInverted(s: float) -> float:
     """
     return 1 - s * s
 
-def Hermite(s, x, z, tanX, tanZ):
+def hermite(s, x, z, tanX, tanZ):
     """Hermite interpolation function.
 
     :param float s: The interpolation value.
@@ -123,7 +123,7 @@ def Hermite(s, x, z, tanX, tanZ):
     return h1 * x + h2 * z + h3 * tanX + h4 * tanZ
 
 
-def RotateAroundPoint(x: float, y: float, angle: float, origin_x: float, origin_y: float) -> tuple[float, float]:
+def rotate_around(x: float, y: float, angle: float, origin_x: float, origin_y: float) -> tuple[float, float]:
     """Rotate a point around another point.
 
     :param float x: X coordinate of the point to rotate.
@@ -143,21 +143,9 @@ def RotateAroundPoint(x: float, y: float, angle: float, origin_x: float, origin_
     new_y = x * s + y * c
     
     return new_x + origin_x, new_y + origin_y
-
-def VectorBetweenPoints(p1: tuple[float, float] | tuple[float, float, float], p2: tuple[float, float] | tuple[float, float, float]) -> tuple[float, float]:
-    """Get the vector between two points.
-
-    :param tuple[float, float] | tuple[float, float, float] p1: Point 1.
-    :param tuple[float, float] | tuple[float, float, float] p2: Point 2.
-    :return tuple[float, float]: The vector between the two points.
-    """
-    if len(p1) == 2:
-        return p2[0] - p1[0], p2[1] - p1[1]
-    else:
-        return p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]
     
 
-def QuatToEuler(quat: list[float]) -> list[float]:
+def quat_to_euler(quat: list[float]) -> list[float]:
     """Convert quaternion to Euler angles with game-specific adjustments.
     
     :param list[float] quat: Quaternion in [w,x,y,z] format
@@ -218,7 +206,7 @@ def quaternion_rotate(q, v):
     return v_rotated
 
 
-def Hermite3D(s, start_pos, end_pos, start_quaternion, end_quaternion, length):
+def hermite_3d(s, start_pos, end_pos, start_quaternion, end_quaternion, length):
     """Hermite interpolation function in 3D space.
 
     :param float s: The interpolation value between 0 and 1.
@@ -230,7 +218,7 @@ def Hermite3D(s, start_pos, end_pos, start_quaternion, end_quaternion, length):
     :return tuple[float, float, float]: The hermite interpolated position (x,y,z).
     """
     if length is None or length == 0:
-        length = DistanceBetweenPoints(start_pos, end_pos)
+        length = distance_between(start_pos, end_pos)
 
     # Initial vector defined by [0, 0, -1] * road length
     initial_vector = np.array([0, 0, -1]) * length

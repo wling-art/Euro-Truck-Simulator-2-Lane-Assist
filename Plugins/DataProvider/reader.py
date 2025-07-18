@@ -1,4 +1,5 @@
 from Plugins.DataProvider.classes import Node
+import orjson
 import json
 import os
 
@@ -15,7 +16,8 @@ def read_nodes() -> list[Node]:
     if path is None: return []
     
     nodes: list[Node] = []
-    file = json.load(open(path, "r"))
+    #file = json.load(open(path, "r"))
+    file = orjson.loads(open(path, "rb").read())
     for node in file:
         nodes.append(Node(
             node["uid"],

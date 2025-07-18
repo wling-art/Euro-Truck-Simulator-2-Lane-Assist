@@ -1,11 +1,13 @@
 from ETS2LA.Plugin import *
 from ETS2LA.Utils.translator import _
+import rich
+import time
 
 from Modules.TruckSimAPI.main import Module as TruckSimAPI
 
-from Plugins.DataProvider.classes import Node
-from Plugins.DataProvider import reader
 from Plugins.DataProvider.utils import memory
+from Plugins.DataProvider.classes import *
+from Plugins.DataProvider import reader
 
 class Plugin(ETS2LAPlugin):
     description = PluginDescription(
@@ -39,3 +41,4 @@ class Plugin(ETS2LAPlugin):
             print(f"Loaded {len(self.nodes)} nodes from data provider.")
             end = memory.read_memory_usage()
             print(f"Memory usage: {end - start:.2f} MB")
+            rich.print_json(data=self.nodes[0].json())

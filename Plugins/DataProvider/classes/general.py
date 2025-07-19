@@ -1,4 +1,5 @@
 import math
+from enum import IntEnum
 
 class Position:
     __slots__ = ['x', 'y', 'z']
@@ -45,6 +46,35 @@ class Position:
             "z": self.z
         }
         
+class Transform:
+    __slots__ = ['x', 'y', 'z', 'rotation', 'euler']
+    
+    x: float
+    y: float
+    z: float
+    rotation: float
+    euler: list[float]
+
+    def __init__(self, x: float, y: float, z: float, rotation: float):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.rotation = rotation
+
+    def __str__(self) -> str:
+        return f"Transform({self.x}, {self.y}, {self.z}, {self.rotation})"
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
+    def json(self) -> dict:
+        return {
+            "x": self.x,
+            "y": self.y,
+            "z": self.z,
+            "rotation": self.rotation
+        }
+        
 class BoundingBox:
     __slots__ = ['min_x', 'min_y', 'max_x', 'max_y']
     
@@ -88,3 +118,31 @@ class BoundingBox:
             "max_x": self.max_x,
             "max_y": self.max_y
         }
+        
+class SpawnPointType(IntEnum):
+    NONE = 0,
+    TrailerPos = 1,
+    UnloadEasyPos = 2,
+    GasPos = 3,
+    ServicePos = 4,
+    TruckStopPos = 5,
+    WeightStationPos = 6,
+    TruckDealerPos = 7,
+    Hotel = 8,
+    Custom = 9,
+    Parking = 10,  # also shows parking in companies which don't work/show up in game
+    Task = 11,
+    MeetPos = 12,
+    CompanyPos = 13,
+    GaragePos = 14,  # manage garage
+    BuyPos = 15,  # buy garage
+    RecruitmentPos = 16,
+    CameraPoint = 17,
+    BusStation = 18,
+    UnloadMediumPos = 19,
+    UnloadHardPos = 20,
+    UnloadRigidPos = 21,
+    WeightCatPos = 22,
+    CompanyUnloadPos = 23,
+    TrailerSpawn = 24,
+    LongTrailerPos = 25,

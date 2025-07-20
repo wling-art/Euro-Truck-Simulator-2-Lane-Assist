@@ -1,5 +1,6 @@
-import math
+from Plugins.DataProvider.utils import math as umath
 from enum import IntEnum
+import math
 
 class Position:
     __slots__ = ['x', 'y', 'z']
@@ -46,16 +47,51 @@ class Position:
             "z": self.z
         }
         
-class Transform:
-    __slots__ = ['x', 'y', 'z', 'rotation', 'euler']
+class Rotation:
+    __slots__ = ['x', 'y', 'z', 'w', 'pitch', 'yaw', 'roll']
     
     x: float
     y: float
     z: float
-    rotation: float
-    euler: list[float]
+    w: float
+    
+    pitch: float
+    yaw: float
+    roll: float
 
-    def __init__(self, x: float, y: float, z: float, rotation: float):
+    def __init__(self, x: float, y: float, z: float, w: float):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.w = w
+        
+        self.pitch, self.yaw, self.roll = umath.quat_to_euler([x, y, z, w])
+
+    def quat(self) -> list[float]:
+        return [self.x, self.y, self.z, self.w]
+
+    def euler(self) -> list[float]:
+        return [self.pitch, self.yaw, self.roll]
+
+    def json(self) -> dict:
+        return {
+            "x": self.x,
+            "y": self.y,
+            "z": self.z,
+            "w": self.w,
+            "pitch": self.pitch,
+            "yaw": self.yaw,
+            "roll": self.roll
+        }
+class Transform:
+    __slots__ = ['x', 'y', 'z', 'rotation']
+    
+    x: float
+    y: float
+    z: float
+    rotation: Rotation
+
+    def __init__(self, x: float, y: float, z: float, rotation: Rotation):
         self.x = x
         self.y = y
         self.z = z
@@ -72,7 +108,7 @@ class Transform:
             "x": self.x,
             "y": self.y,
             "z": self.z,
-            "rotation": self.rotation
+            "rotation": self.rotation.json()
         }
         
 class BoundingBox:

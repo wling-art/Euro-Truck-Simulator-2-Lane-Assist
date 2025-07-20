@@ -4,6 +4,7 @@ import rich
 
 from Modules.TruckSimAPI.main import Module as TruckSimAPI
 
+from Plugins.DataProvider.classes.data_provider import DataProvider
 from Plugins.DataProvider.utils import memory
 from Plugins.DataProvider.classes import *
 from Plugins.DataProvider import reader
@@ -25,9 +26,7 @@ class Plugin(ETS2LAPlugin):
         )
     ]
     
-    nodes: dict[str, Node] = {}
-    roads: dict[str, Road] = {}
-    prefabs: dict[str, Prefab] = {}
+    provider = DataProvider()
     
     def init(self) -> None:
         self.api = TruckSimAPI(self)
@@ -38,9 +37,9 @@ class Plugin(ETS2LAPlugin):
         self.state.text = _("Loading nodes...")
         start = memory.read_memory_usage()
         nodes = reader.read_nodes()
-        self.nodes = {node.uid: node for node in nodes}
-                
-        print(f"Loaded {len(self.nodes)} nodes from data provider.")
+        self.provider.nodes = {node.uid: node for node in nodes}
+
+        print(f"Loaded {len(self.provider.nodes)} nodes from data provider.")
         end = memory.read_memory_usage()
         print(f"Memory usage: {end - start:.2f} MB")
         
@@ -54,12 +53,12 @@ class Plugin(ETS2LAPlugin):
                 road.road_look = road_looks[road.road_look_token]
             else:
                 road.road_look = RoadLook(road.road_look_token, "Unknown", [], [], None, None, None)
-                
-        self.roads = {road.uid: road for road in roads}
+
+        self.provider.roads = {road.uid: road for road in roads}
         del roads
         del road_looks
-        
-        print(f"Loaded {len(self.roads)} roads from data provider.")
+
+        print(f"Loaded {len(self.provider.roads)} roads from data provider.")
         end = memory.read_memory_usage()
         print(f"Memory usage: {end - start:.2f} MB")
             
@@ -67,12 +66,12 @@ class Plugin(ETS2LAPlugin):
         self.state.text = _("Loading prefabs...")
         start = memory.read_memory_usage()
         prefabs = reader.read_prefabs()
-        self.prefabs = {prefab.uid: prefab for prefab in prefabs}
+        self.provider.prefabs = {prefab.uid: prefab for prefab in prefabs}
         del prefabs
         
         descriptions = reader.read_prefab_descriptions()
         descriptions = {description.token: description for description in descriptions}
-        for prefab in self.prefabs.values():
+        for prefab in self.provider.prefabs.values():
             if prefab.token in descriptions:
                 prefab.description = descriptions[prefab.token]
             else:
@@ -85,7 +84,11 @@ class Plugin(ETS2LAPlugin):
         
         self.state.reset()
         
+    def parse_lanes(self):
+        for road in self.provider.roads.values():
+            lane = Lane()
+        
     def run(self) -> None:
         data = self.api.run()
-        if not self.prefabs or not self.nodes or not self.roads:
+        if not self.provider.prefabs or not self.provider.nodes or not self.provider.roads:
             self.load_data()

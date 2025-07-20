@@ -15,6 +15,16 @@ def distance_between(p1: tuple[float, float] | tuple[float, float, float], p2: t
     else:
         return math.sqrt(math.pow(p2[0] - p1[0], 2) + math.pow(p2[1] - p1[1], 2) + math.pow(p2[2] - p1[2], 2))
     
+def lerp(from_value: float, to_value: float, s: float) -> float:
+    """Lerp between two values.
+
+    :param float from_value: Value to lerp from.
+    :param float to_value: Value to lerp to.
+    :param float s: The interpolation value.
+    :return float: The lerped value.
+    """
+    return (1 - s) * from_value + s * to_value
+    
 def lerp_tuple(from_tuple: tuple[float, float] | tuple[float, float, float], to_tuple: tuple[float, float] | tuple[float, float, float], s: float) -> tuple[float, float] | tuple[float, float, float]:
     """Lerp between two tuples.
 

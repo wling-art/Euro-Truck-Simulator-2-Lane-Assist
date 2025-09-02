@@ -10,7 +10,6 @@ import logging
 import socket
 import time
 
-
 service_name = "ETS2LA._http._tcp.local."
 address = "ets2la.local."
 port = 37520
@@ -23,25 +22,30 @@ info = ServiceInfo(
     addresses=[socket.inet_aton(local_ip)],
     port=port,
     properties={},
-    server=address
+    server=address,
 )
+
 
 def socket_thread():
     zeroconf = Zeroconf()
     zeroconf.register_service(info)
 
-    logging.info(_("Successfully registered [bold]http://{address}[/bold] to point to [dim]{local_ip}[/dim].").format(address=address[:-1], local_ip=local_ip))
+    logging.info(
+        _(
+            "Successfully registered [bold]http://{address}[/bold] to point to [dim]{local_ip}[/dim]."
+        ).format(address=address[:-1], local_ip=local_ip)
+    )
 
     try:
         while True:
             time.sleep(2)
             pass
-    except:
+    except Exception:
         pass
-    
+
     zeroconf.unregister_service(info)
     zeroconf.close()
-    
+
 
 def run():
     threading.Thread(target=socket_thread, daemon=True).start()

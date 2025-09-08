@@ -1,5 +1,4 @@
-"""
-This file handles both the main logger as well as the
+"""This file handles both the main logger as well as the
 plugin specific logger.
 
 Plugins by default only log warning and up to the console,
@@ -21,9 +20,10 @@ from ETS2LA.Utils.Console.colors import (
     DARK_YELLOW,
     DARK_RED,
 )
-import ETS2LA.Utils.settings as settings
-
+from ETS2LA.Settings import GlobalSettings
 import os
+
+settings = GlobalSettings()
 
 # Disable logging from 'comtypes', a dependency of 'pyttsx3'
 logging.getLogger("comtypes").setLevel(logging.CRITICAL)
@@ -32,7 +32,7 @@ logging.getLogger("comtypes").setLevel(logging.CRITICAL)
 logging.getLogger("websockets").setLevel(logging.CRITICAL)
 
 # Enables / Disables the fancy rich traceback
-ft = settings.Get("global", "use_fancy_traceback", True)
+ft = settings.use_fancy_traceback
 USE_FANCY_TRACEBACK = True if ft is None else bool(ft)
 
 console = Console(
@@ -46,13 +46,11 @@ console = Console(
 
 
 def setup_global_logging(write_file: bool = True) -> logging.Logger:
-    """
-    Setup the main logger.
+    """Setup the main logger.
 
     :param bool write_file: Whether to write the logs to a file.
     :return: main logger.
     """
-
     # logging.DEBUG is missing since we don't want the log files
     # to have this format.
     logging.addLevelName(logging.DEBUG, f"{DARK_GRAY}[DBG]{END}")
@@ -123,8 +121,7 @@ class CustomHighligher(Highlighter):
 def setup_process_logging(
     name: str, console_level=logging.INFO, filepath: str = ""
 ) -> logging.Logger:
-    """
-    Setup plugin logging.
+    """Setup plugin logging.
 
     :param str name: The name of the plugin
     :param int console_level: The console log level (default: INFO)
@@ -132,7 +129,6 @@ def setup_process_logging(
 
     :return: plugin logger.
     """
-
     # Remove the default handler
     logging.getLogger().handlers = []
     logging.getLogger().addHandler(logging.NullHandler())

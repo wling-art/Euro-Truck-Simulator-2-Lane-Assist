@@ -1,20 +1,20 @@
-from ETS2LA.Utils.settings import Get, Listen
+from Plugins.AdaptiveCruiseControl.settings import settings
 import numpy as np
 import logging
 
 # Constants
-MU = Get("AdaptiveCruiseControl", "MU", 0.5)  # Coefficient of friction
+MU = settings.MU
 G = 9.81  # Gravitational acceleration (m/s^2)
 MAX_DISTANCE = 150  # Distance at which curvature affects 0%
 MIN_DISTANCE = 30  # Distance at which curvature affects 100%
 
 
-def ListenSettings(settings: dict):
+def ListenSettings():
     global MU
-    MU = settings.get("MU", 0.5)
+    MU = settings.MU
 
 
-Listen("AdaptiveCruiseControl", ListenSettings)
+settings.listen(ListenSettings)
 
 
 def distance_to_point(x1, y1, x2, y2):
@@ -22,9 +22,7 @@ def distance_to_point(x1, y1, x2, y2):
 
 
 def calculate_curvature(points, x, z):
-    """
-    Calculate the curvature for each point in the road segment.
-    """
+    """Calculate the curvature for each point in the road segment."""
     curvatures = []
     for i in range(1, len(points) - 1):
         # Direction vectors
@@ -62,10 +60,7 @@ def calculate_curvature(points, x, z):
 
 
 def get_maximum_speed_for_points(points, x, z) -> float:
-    """
-    Calculate the maximum safe speed based on road curvature.
-    """
-
+    """Calculate the maximum safe speed based on road curvature."""
     if len(points) < 3:  # Need at least 3 points to calculate curvature
         return 999
 

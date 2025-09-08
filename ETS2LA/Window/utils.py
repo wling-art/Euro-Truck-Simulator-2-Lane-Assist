@@ -1,9 +1,8 @@
-"""
-Provides several useful functions for interacting
+"""Provides several useful functions for interacting
 with the window, mainly via the win32 APIs.
 """
 
-import ETS2LA.Utils.settings as settings
+from ETS2LA.Settings import GlobalSettings
 import ETS2LA.variables as variables
 from ETS2LA.Utils.translator import _
 
@@ -15,6 +14,8 @@ import time
 import mss
 import os
 
+settings = GlobalSettings()
+
 # TODO: Add Linux support.
 if os.name == "nt":
     import win32gui
@@ -25,8 +26,7 @@ if os.name == "nt":
 
 
 def get_screen_dimensions(monitor: int = 1) -> tuple[int, int, int, int]:
-    """
-    Get the specified monitor's dimensions.
+    """Get the specified monitor's dimensions.
 
     :param int monitor: The monitor index.
 
@@ -54,26 +54,23 @@ Don't check if the window is open.
 This is to prevent the app from being closed when --no-ui is used
 or the window has not started for another reason.
 """
-window_position = settings.Get(
-    "global",
-    "window_position",
-    (
-        get_screen_dimensions()[2] // 2 - 1280 // 2,
-        get_screen_dimensions()[3] // 2 - 720 // 2,
-    ),
-)
+window_position = settings.window_position
 """
 The current position of the window. 
 Used mainly by other files to do vision checks.
 """
+if window_position == (0, 0):
+    settings.window_position = (
+        get_screen_dimensions()[2] // 2 - 1280 // 2,
+        get_screen_dimensions()[3] // 2 - 720 // 2,
+    )
 
 
 # TODO: Clean this function, it's old code so the if statements are 500 chars long.
 def correct_window_position(
     window_x: int, window_y: int, width: int = 1280, height: int = 720
 ) -> tuple[int, int]:
-    """
-    Correct the window position to be inside the screen area of the closest monitor.
+    """Correct the window position to be inside the screen area of the closest monitor.
 
     :param int window_x: The window's X position.
     :param int window_y: The window's Y position.
@@ -82,7 +79,6 @@ def correct_window_position(
 
     :return tuple[int, int]: The corrected window position.
     """
-
     with mss.mss() as sct:
         monitors = sct.monitors
 
@@ -124,13 +120,12 @@ def correct_window_position(
 
 
 def get_theme_color() -> str:
-    """
-    Get the current theme color in hexadecimal.
+    """Get the current theme color in hexadecimal.
 
     :return str: The theme color in hexadecimal.
     """
     try:
-        theme = settings.Get("global", "theme", "dark")
+        theme = settings.theme
 
         with open(f"{variables.PATH}frontend\\src\\pages\\globals.css", "r") as file:
             content = file.read().split("\n")
@@ -168,11 +163,7 @@ def get_theme_color() -> str:
                         return hex_color
     except Exception:
         try:
-            return (
-                "#ffffff"
-                if settings.Get("global", "theme", "dark") == "light"
-                else "#18181b"
-            )
+            return "#ffffff" if settings.theme == "light" else "#18181b"
         except Exception:
             return "#18181b"
 
@@ -180,8 +171,7 @@ def get_theme_color() -> str:
 
 
 def set_window_icon(image_path: str) -> None:
-    """
-    Set the ETS2LA window icon to a specified (.ico) image.
+    """Set the ETS2LA window icon to a specified (.ico) image.
 
     :param str image_path: The path to the image.
     """
@@ -199,12 +189,10 @@ def set_window_icon(image_path: str) -> None:
 
 
 def color_title_bar(theme: Literal["dark", "light"] = "dark"):
-    """
-    Color the title bar based on the theme
+    """Color the title bar based on the theme
 
     :param str theme: The theme to color the title bar with.
     """
-
     global dont_check_window_open
 
     sinceStart = time.perf_counter()
@@ -212,7 +200,7 @@ def color_title_bar(theme: Literal["dark", "light"] = "dark"):
     colors = {"dark": 0x1B1818, "light": 0xFFFFFF}
 
     hwnd = 0
-    timeout = settings.Get("global", "window_timeout", 10)
+    timeout = settings.window_timeout
     while hwnd == 0:
         time.sleep(0.01)
         hwnd = win32gui.FindWindow(None, variables.APPTITLE)
@@ -236,13 +224,11 @@ def color_title_bar(theme: Literal["dark", "light"] = "dark"):
 
 
 def check_if_window_still_open() -> bool:
-    """
-    Check if the window is still open or if it
+    """Check if the window is still open or if it
     has been closed.
 
     :return bool: The window is open.
     """
-
     global last_window_position_time
     global window_position
     if dont_check_window_open:
@@ -258,7 +244,7 @@ def check_if_window_still_open() -> bool:
                 tl = win32gui.ClientToScreen(hwnd, (rect[0], rect[1]))
                 if (tl[0], tl[1]) != window_position:
                     window_position = (tl[0], tl[1])
-                    settings.Set("global", "window_position", window_position)
+                    settings.window_position = window_position
                 last_window_position_time = time.perf_counter()
             return True
     else:
@@ -267,8 +253,7 @@ def check_if_window_still_open() -> bool:
 
 
 def check_if_specified_window_open(name: str) -> bool:
-    """
-    Check if a window with the specified name is open.
+    """Check if a window with the specified name is open.
 
     :param str name: The name of the window.
 
@@ -282,7 +267,7 @@ def check_if_specified_window_open(name: str) -> bool:
             ),
             top_windows,
         )
-        for hwnd, window_text in top_windows:
+        for _hwnd, window_text in top_windows:
             if name in window_text:
                 return True
 
@@ -370,7 +355,7 @@ def set_transparency(value: bool):
                 | win32con.WS_EX_LAYERED,
             )
 
-            transparency = settings.Get("global", "transparency_alpha", 0.8)
+            transparency = settings.transparency_alpha
             if transparency is None:
                 transparency = 0.8
 
@@ -388,7 +373,7 @@ def set_transparency(value: bool):
             )
 
         IS_TRANSPARENT = value
-        settings.Set("global", "transparency", value)
+        settings.transparency = value
     else:
         logging.warning(f"Transparency is not supported on this platform. ({os.name})")
     return IS_TRANSPARENT

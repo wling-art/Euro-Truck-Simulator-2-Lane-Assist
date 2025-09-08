@@ -1,4 +1,4 @@
-from ETS2LA.Utils import settings
+from ETS2LA.Settings import GlobalSettings
 from ETS2LA.Module import ETS2LAModule
 import platform
 import struct
@@ -7,17 +7,16 @@ import math
 import time
 import os
 
-fallback_acceleration = settings.Get("global", "acceleration_fallback", default=True)
+settings = GlobalSettings()
+fallback_acceleration = settings.acceleration_fallback
 
 
-def update_fallback_acceleration(dictionary: dict):
+def update_fallback_acceleration():
     global fallback_acceleration
-    fallback_acceleration = dictionary.get(
-        "acceleration_fallback", fallback_acceleration
-    )
+    fallback_acceleration = settings.acceleration_fallback
 
 
-settings.Listen("global", update_fallback_acceleration)
+settings.listen(update_fallback_acceleration)
 
 
 class SCSController:
@@ -332,10 +331,10 @@ class SCSController:
         elif system == "Linux":
             try:
                 self._shm_fd = open(self.SHM_FILE, "rb+")
-            except Exception:
+            except Exception as e:
                 raise RuntimeError(
                     "ETS2/ATS is not running (Currently game needs to be running for app to start THIS IS TEMPORARY)"
-                )  # Temporary "fix" to remind me that the game needs to be open, waiting for tummy to respond back on how to tell the app to stop using the sdk.
+                ) from e  # Temporary "fix" to remind me that the game needs to be open, waiting for tummy to respond back on how to tell the app to stop using the sdk.
             try:
                 if os.name != "nt":  # silence typeright
                     self._shm_buff = mmap.mmap(

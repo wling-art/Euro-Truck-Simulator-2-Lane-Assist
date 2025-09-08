@@ -4,8 +4,6 @@ from ETS2LA.Utils.Values.dictionaries import merge
 from multiprocessing import Queue
 from typing import Literal, Callable
 import threading
-import logging
-import json
 import time
 
 
@@ -45,33 +43,6 @@ class Tags:
             else:
                 data = tag_dict[plugin]
         return data
-
-
-class GlobalSettings:  # read only instead of the plugin settings
-    def __init__(self) -> None:
-        self._path = "ETS2LA/global.json"
-        self._settings = {}
-        self._load()
-
-    def _load(self):
-        with open(self._path, "r") as file:
-            self._settings = json.load(file)
-
-    def __getattr__(self, name):
-        if name in self.__dict__:
-            return self.__dict__[name]
-
-        if name in self._settings:
-            return self._settings[name]
-
-        logging.warning(f"Setting '{name}' not found in settings file")
-        return None
-
-    def __setattr__(self, name: str, value) -> None:
-        if name in ["_path", "_settings"]:
-            self.__dict__[name] = value
-        else:
-            raise TypeError("Global settings are read-only")
 
 
 class State:
@@ -135,39 +106,6 @@ class State:
         self.progress = -1
 
 
-class Global:
-    settings: GlobalSettings
-    """
-    You can use this to access the global settings with dot notation.
-    
-    Example:
-    ```python
-    # Get Data
-    setting_data = self.globals.settings.setting_name
-    # Set Data
-    self.globals.settings.setting_name = 5
-    -> TypeError: Global settings are read only
-    ```
-    """
-    tags: Tags
-    """
-    You can access the tags by using dot notation.
-    
-    Example:
-    ```python
-    # Get Data
-    tag_data = self.globals.tags.tag_name
-    
-    # Set Data
-    self.globals.tags.tag_name = 5
-    ```
-    """
-
-    def __init__(self, get_tag: Callable, set_tag: Callable) -> None:
-        self.settings = GlobalSettings()
-        self.tags = Tags(get_tag, set_tag)
-
-
 class PluginDescription:
     """ETS2LA Plugin Description
 
@@ -206,27 +144,27 @@ class PluginDescription:
         name: str = "",
         version: str = "",
         description: str = "",
-        tags: list[str] = [],
-        dependencies: list[str] = [],
-        compatible_os: list[Literal["Windows", "Linux"]] = ["Windows", "Linux"],
-        compatible_game: list[Literal["ETS2", "ATS"]] = ["ETS2", "ATS"],
-        update_log: dict[str, str] = {},
-        modules: list[str] = [],
+        tags: list[str] = None,
+        dependencies: list[str] = None,
+        compatible_os: list[Literal["Windows", "Linux"]] = None,
+        compatible_game: list[Literal["ETS2", "ATS"]] = None,
+        update_log: dict[str, str] = None,
+        modules: list[str] = None,
         hidden: bool = False,
-        listen: list[str] = ["*.py"],
+        listen: list[str] = None,
         ui_filename: str = "",
         fps_cap: float = 30.0,
     ) -> None:
         self.name = name
         self.version = version
         self.description = description
-        self.dependencies = dependencies
-        self.compatible_os = compatible_os
-        self.compatible_game = compatible_game
-        self.update_log = update_log
-        self.modules = modules
-        self.tags = tags
+        self.dependencies = dependencies if dependencies else []
+        self.compatible_os = compatible_os if compatible_os else ["Windows", "Linux"]
+        self.compatible_game = compatible_game if compatible_game else ["ETS2", "ATS"]
+        self.update_log = update_log if update_log else {}
+        self.modules = modules if modules else []
+        self.tags = tags if tags else []
         self.hidden = hidden
-        self.listen = listen
+        self.listen = listen if listen else ["*.py"]
         self.ui_filename = ui_filename
         self.fps_cap = fps_cap

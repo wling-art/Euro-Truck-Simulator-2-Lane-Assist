@@ -80,8 +80,11 @@ def PrefabToRouteSection(
 
 
 def RoadToRouteSection(
-    road: c.Road, lane_index: int, target_lanes: list[int] = [], invert: bool = False
+    road: c.Road, lane_index: int, target_lanes: list[int] = None, invert: bool = False
 ) -> rc.RouteSection:
+    if target_lanes is None:
+        target_lanes = []
+
     route_section = rc.RouteSection()
     route_section.items = []
 
@@ -209,8 +212,8 @@ def IsRoadValid(road: c.Road) -> bool:
     return True
 
 
-def GetNextRouteSection(route: list[rc.RouteSection] = []) -> rc.RouteSection:
-    if len(route) == 0:
+def GetNextRouteSection(route: list[rc.RouteSection] = None) -> rc.RouteSection:
+    if not route:
         route = data.route_plan
 
     if len(route) == 0:
@@ -649,7 +652,7 @@ def GetNextNavigationItem():
 def ResetState():
     if "indicate" in data.plugin.state.text or "lane change" in data.plugin.state.text:
         data.plugin.state.text = ""
-        data.plugin.globals.tags.lane_change_status = "idle"
+        data.plugin.tags.lane_change_status = "idle"
 
 
 was_indicating = False
@@ -730,9 +733,7 @@ def CheckForLaneChange():
     if current.is_lane_changing:
         if current.lane_change_factor < 0.3:
             data.route_plan = [current]
-        data.plugin.globals.tags.lane_change_status = (
-            f"executing:{current.lane_change_factor}"
-        )
+        data.plugin.tags.lane_change_status = f"executing:{current.lane_change_factor}"
         data.plugin.state.text = "Executing lane change..."
         return
 
@@ -805,7 +806,7 @@ def CheckForLaneChange():
             if left > planned and not (
                 data.truck_indicating_right or data.truck_indicating_left
             ):
-                data.plugin.globals.tags.lane_change_status = "waiting"
+                data.plugin.tags.lane_change_status = "waiting"
                 data.plugin.state.text = "Please indicate to confirm lane change."
                 if time.time() - data.last_sound_played > data.sound_play_interval:
                     sounds.Play("info")

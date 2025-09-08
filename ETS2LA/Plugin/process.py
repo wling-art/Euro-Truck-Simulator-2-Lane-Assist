@@ -3,7 +3,7 @@ from types import ModuleType
 
 from ETS2LA.Utils.Console.logging import setup_process_logging
 from ETS2LA.Controls import ControlEvent
-from ETS2LA.Utils.settings import Get
+from ETS2LA.Settings import GlobalSettings
 from ETS2LA.UI import ETS2LAPage
 from ETS2LA.Plugin import (
     PluginMessage,
@@ -21,6 +21,8 @@ import logging
 import psutil
 import time
 import os
+
+settings = GlobalSettings()
 
 
 class PerformanceEntry:
@@ -148,8 +150,7 @@ class PluginProcess:
     """
 
     def get_tag(self, name: str) -> dict:
-        """
-        Get the tags from the plugin. This is used to get the
+        """Get the tags from the plugin. This is used to get the
         tags from the plugin and send them to the backend.
         """
         if name not in self.input_tags_that_need_update:
@@ -161,8 +162,7 @@ class PluginProcess:
         return self.input_tags[name]
 
     def get_mem_tag(self, name: str) -> dict:
-        """
-        Get the tags from the plugin without updating them.
+        """Get the tags from the plugin without updating them.
         This is used to get the tags from the plugin without
         sending them to the backend.
         """
@@ -175,8 +175,7 @@ class PluginProcess:
         return self.input_tags[name]
 
     def set_tag(self, name: str, value) -> None:
-        """
-        Set a tag in the plugin. This is used to set a tag
+        """Set a tag in the plugin. This is used to set a tag
         in the plugin and send it to the backend.
         """
         self.output_tags[name] = value
@@ -184,9 +183,7 @@ class PluginProcess:
         return None
 
     def set_mem_tag(self, name: str, value) -> None:
-        """
-        Set a memory tag.
-        """
+        """Set a memory tag."""
         self.mem_output[name] = value
         self.mem_needs_update = True
         return None
@@ -204,7 +201,7 @@ class PluginProcess:
                     Channel.CRASHED, {"message": f"Error importing plugin file: {e}"}
                 )
             )
-            raise ImportError(f"Error importing plugin file: {e}")
+            raise ImportError(f"Error importing plugin file: {e}") from e
 
         logging.info(f"Plugin file imported successfully: {self.file}")
 
@@ -246,7 +243,6 @@ class PluginProcess:
                     time.sleep(0.1)
                 continue
 
-            # Handle the message based on the channel
             match message.channel:
                 case Channel.GET_DESCRIPTION:
                     Description(self)(message)
@@ -465,7 +461,7 @@ class PluginProcess:
         )
         logging.info("Started logging")
 
-        if Get("global", "high_priority", default=True):
+        if settings.high_priority:
             self.set_high_priority()
             logging.info("Set high priority for plugin process")
 
@@ -505,8 +501,7 @@ class PluginProcess:
 
 # MARK: Handlers
 class ChannelHandler:
-    """
-    A handler for a specific channel. These are
+    """A handler for a specific channel. These are
     used by the plugin process to respond to backend
     messages.
     """
@@ -517,8 +512,7 @@ class ChannelHandler:
         self.plugin = plugin
 
     def __call__(self, message: PluginMessage):
-        """
-        Handle a message from the plugin process.
+        """Handle a message from the plugin process.
         This function is called by the plugin process
         when a message is received.
         """
@@ -587,7 +581,6 @@ class PluginManagement(ChannelHandler):
 
                     for page in self.plugin.pages:
                         page.plugin = self.plugin.plugin
-                        page.settings = self.plugin.plugin.settings
 
                     message.state = State.DONE
                 except Exception as e:
@@ -603,7 +596,6 @@ class PluginManagement(ChannelHandler):
 
                     for page in self.plugin.pages:
                         page.plugin = None
-                        page.settings = None
 
                 except Exception as e:
                     message.state = State.ERROR
@@ -627,7 +619,6 @@ class PluginManagement(ChannelHandler):
 
                     for page in self.plugin.pages:
                         page.plugin = self.plugin
-                        page.settings = self.plugin.settings
 
                     message.state = State.DONE
                 except Exception as e:
@@ -694,7 +685,6 @@ class Function(ChannelHandler):
                 # Find the page
                 page = None
                 for p in self.plugin.pages:
-                    # Get the page object name (ie. Settings, Page, etc.)
                     page_object = p.__class__.__name__
                     if page_object == object:
                         page = p

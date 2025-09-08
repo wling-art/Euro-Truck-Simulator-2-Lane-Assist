@@ -25,7 +25,7 @@ def get_closest_route_item(items: list[rc.RouteItem]):
     closest_point_distance = math.inf
     for item in in_bounding_box:
         if isinstance(item, c.Prefab):
-            for lane_id, lane in enumerate(item.nav_routes):
+            for _lane_id, lane in enumerate(item.nav_routes):
                 for point in lane.points:
                     point_tuple = point.tuple()
                     point_tuple = (point_tuple[0], point_tuple[2])
@@ -37,7 +37,7 @@ def get_closest_route_item(items: list[rc.RouteItem]):
                         closest_item = item
 
         elif isinstance(item, c.Road):
-            for lane_id, lane in enumerate(item.lanes):
+            for _lane_id, lane in enumerate(item.lanes):
                 for point in lane.points:
                     point_tuple = point.tuple()
                     point_tuple = (point_tuple[0], point_tuple[2])
@@ -257,7 +257,7 @@ def GetSteering():
             lateral_offset = np.cross(
                 truck_position_vector, centerline
             ) / np.linalg.norm(centerline)
-            # data.plugin.globals.tags.lateral_offset = lateral_offset
+            # data.plugin.tags.lateral_offset = lateral_offset
 
             # Calculate the dot product and the norms
             dot_product = np.dot(forward_vector, centerline)

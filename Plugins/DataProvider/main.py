@@ -114,6 +114,8 @@ class Plugin(ETS2LAPlugin):
                 continue
 
             if last_lane.side == lane.side:
+                last_lane.right = lane
+                lane.left = last_lane
                 last_lane.markings.right.type = "dashed"
                 lane.markings.left.type = "dashed"
 
@@ -123,6 +125,8 @@ class Plugin(ETS2LAPlugin):
                 lane.markings.left.type = "solid"
 
             if i == len(lanes) - 1:
+                if last_lane:
+                    lane.left = last_lane
                 lane.markings.right.type = "solid"
 
             last_lane = lane

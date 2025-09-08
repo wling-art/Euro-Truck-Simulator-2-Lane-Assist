@@ -150,6 +150,11 @@ class Lane:
         self.railings = LaneRailings(LaneRailing(), LaneRailing())
         self.rules = LaneRule()
 
+        self.forward = None
+        self.backward = None
+        self.left = None
+        self.right = None
+
     def __str__(self) -> str:
         text = f"Lane for {self.item_type} ({self.item_uid}) index={self.index}"
         if self.side:

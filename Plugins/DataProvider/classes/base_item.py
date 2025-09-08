@@ -1,5 +1,6 @@
 from enum import IntEnum
 
+
 class ItemType(IntEnum):
     Terrain = 1
     Building = 2
@@ -35,9 +36,10 @@ class ItemType(IntEnum):
     VisibilityArea = 48
     Gate = 49
 
+
 class BaseItem:
-    __slots__ = ['uid', 'type', 'x', 'y', 'sector_x', 'sector_y']
-    
+    __slots__ = ["uid", "type", "x", "y", "sector_x", "sector_y"]
+
     uid: str
     type: ItemType
     x: float

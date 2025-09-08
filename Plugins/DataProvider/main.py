@@ -1,13 +1,17 @@
 from ETS2LA.Utils.translator import _
-from ETS2LA.Plugin import *
-import rich
+from ETS2LA.Plugin import ETS2LAPlugin, PluginDescription, Author
 
 from Modules.TruckSimAPI.main import Module as TruckSimAPI
 
 from Plugins.DataProvider.classes.data_provider import DataProvider
 from Plugins.DataProvider.utils import memory
-from Plugins.DataProvider.classes import *
+from Plugins.DataProvider.classes import Road, RoadLook, Lane
 from Plugins.DataProvider import reader
+
+from typing import Literal
+from rich import print
+import time
+
 
 class Plugin(ETS2LAPlugin):
     description = PluginDescription(
@@ -15,23 +19,23 @@ class Plugin(ETS2LAPlugin):
         description=_("Provides map data for other plugins."),
         version="1.0.0",
         fps_cap=1,
-        tags=["Base"]
+        tags=["Base"],
     )
-    
+
     author = [
         Author(
             name="Tumppi066",
             url="https://github.com/Tumppi066",
-            icon="https://avatars.githubusercontent.com/u/83072683?v=4"
+            icon="https://avatars.githubusercontent.com/u/83072683?v=4",
         )
     ]
-    
+
     provider = DataProvider()
-    
+
     def init(self) -> None:
         self.api = TruckSimAPI(self)
         self.api.init()
-        
+
     def load_data(self) -> None:
         # Nodes
         self.state.text = _("Loading nodes...")
@@ -42,7 +46,7 @@ class Plugin(ETS2LAPlugin):
         print(f"Loaded {len(self.provider.nodes)} nodes from data provider.")
         end = memory.read_memory_usage()
         print(f"Memory usage: {end - start:.2f} MB")
-        
+
         # Roads
         self.state.text = _("Loading roads...")
         start = memory.read_memory_usage()
@@ -52,7 +56,9 @@ class Plugin(ETS2LAPlugin):
             if road.road_look_token in road_looks:
                 road.road_look = road_looks[road.road_look_token]
             else:
-                road.road_look = RoadLook(road.road_look_token, "Unknown", [], [], None, None, None)
+                road.road_look = RoadLook(
+                    road.road_look_token, "Unknown", [], [], None, None, None
+                )
 
         self.provider.roads = {road.uid: road for road in roads}
         del roads
@@ -61,14 +67,14 @@ class Plugin(ETS2LAPlugin):
         print(f"Loaded {len(self.provider.roads)} roads from data provider.")
         end = memory.read_memory_usage()
         print(f"Memory usage: {end - start:.2f} MB")
-            
+
         # Prefabs
         self.state.text = _("Loading prefabs...")
         start = memory.read_memory_usage()
         prefabs = reader.read_prefabs()
         self.provider.prefabs = {prefab.uid: prefab for prefab in prefabs}
         del prefabs
-        
+
         descriptions = reader.read_prefab_descriptions()
         descriptions = {description.token: description for description in descriptions}
         for prefab in self.provider.prefabs.values():
@@ -76,19 +82,88 @@ class Plugin(ETS2LAPlugin):
                 prefab.description = descriptions[prefab.token]
             else:
                 prefab.description = None
-        
+
         del descriptions
-        print(f"Loaded {len(self.prefabs)} prefabs from data provider.")
+        print(f"Loaded {len(self.provider.prefabs)} prefabs from data provider.")
         end = memory.read_memory_usage()
         print(f"Memory usage: {end - start:.2f} MB")
-        
+
         self.state.reset()
-        
+
+    def create_lane_for_road(
+        self, road: Road, side: Literal["left", "right"], index: int
+    ) -> Lane:
+        lane = Lane()
+        lane.item = road
+        lane.item_type = "road"
+        lane.item_uid = road.uid
+
+        lane.index = index
+        lane.side = side
+        lane.type = "normal"  # TODO: Parse lane type (use the RoadLook data)
+        # TODO: Parse markings, railings, rules, probably as a processing step after?
+
+        return lane
+
+    def process_road_lanes(self, lanes: list[Lane]) -> None:
+        last_lane: Lane | None = None
+        for i, lane in enumerate(lanes):
+            if not last_lane:
+                lane.markings.left.type = "solid"
+                last_lane = lane
+                continue
+
+            if last_lane.side == lane.side:
+                last_lane.markings.right.type = "dashed"
+                lane.markings.left.type = "dashed"
+
+            if last_lane.side != lane.side:
+                # TODO: Check if the lanes are connected, if so, use dashed lines
+                last_lane.markings.right.type = "solid"
+                lane.markings.left.type = "solid"
+
+            if i == len(lanes) - 1:
+                lane.markings.right.type = "solid"
+
+            last_lane = lane
+
     def parse_lanes(self):
         for road in self.provider.roads.values():
-            lane = Lane()
-        
+            lanes: list[Lane] = []
+            index = 0
+            for _lane in road.road_look.lanes_left:
+                lane_instance = self.create_lane_for_road(road, "left", index)
+                index += 1
+                if lane_instance:
+                    lanes.append(lane_instance)
+
+            for _lane in road.road_look.lanes_right:
+                lane_instance = self.create_lane_for_road(road, "right", index)
+                index += 1
+                if lane_instance:
+                    lanes.append(lane_instance)
+
+            self.process_road_lanes(lanes)
+            self.provider.lanes[road.uid] = lanes
+            for lane in lanes:
+                print(lane)
+            print("\n")
+
     def run(self) -> None:
-        data = self.api.run()
-        if not self.provider.prefabs or not self.provider.nodes or not self.provider.roads:
+        # data = self.api.run()
+        if (
+            not self.provider.prefabs
+            or not self.provider.nodes
+            or not self.provider.roads
+        ):
             self.load_data()
+
+        start = memory.read_memory_usage()
+        self.parse_lanes()
+        print(
+            f"Total lanes parsed: {sum(len(lanes) for lanes in self.provider.lanes.values())}"
+        )
+        used = memory.read_memory_usage() - start
+        print(f"Used {used:.2f} MB")
+
+        time.sleep(60)

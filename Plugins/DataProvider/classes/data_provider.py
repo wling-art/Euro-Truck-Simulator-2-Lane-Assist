@@ -1,22 +1,26 @@
 from Plugins.DataProvider.classes.node import Node
 from Plugins.DataProvider.classes.road import Road
 from Plugins.DataProvider.classes.prefab import Prefab
+from Plugins.DataProvider.classes.lane import Lane
 
 from typing import Optional
 
-class DataProvider():
+
+class DataProvider:
     """
     The DataProvider is used to store all the data parsed from the files.
     Basically it just gives an easy way to lookup nodes and items based on their UIDs.
     """
+
     nodes: dict[str, Node] = {}
     roads: dict[str, Road] = {}
     prefabs: dict[str, Prefab] = {}
-    
+    lanes: dict[str, Lane] = {}
+
     def get_node(self, uid: str) -> Optional[Node]:
         """Get a node by its unique ID."""
         return self.nodes.get(uid)
-    
+
     def get_item(self, uid: str) -> Optional[Road | Prefab]:
         """
         Get an item (node, road, or prefab) by its unique ID.

@@ -2,9 +2,10 @@ from Plugins.DataProvider.utils import math as umath
 from enum import IntEnum
 import math
 
+
 class Position:
-    __slots__ = ['x', 'y', 'z']
-    
+    __slots__ = ["x", "y", "z"]
+
     x: float
     y: float
     z: float
@@ -33,28 +34,27 @@ class Position:
 
     def __add__(self, other):
         return Position(self.x + other.x, self.y + other.y, self.z + other.z)
-    
+
     def __sub__(self, other):
         return Position(self.x - other.x, self.y - other.y, self.z - other.z)
 
-    def distance_to(self, other: 'Position') -> float:
-        return math.sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2 + (self.z - other.z) ** 2)
+    def distance_to(self, other: "Position") -> float:
+        return math.sqrt(
+            (self.x - other.x) ** 2 + (self.y - other.y) ** 2 + (self.z - other.z) ** 2
+        )
 
     def json(self) -> dict:
-        return {
-            "x": self.x,
-            "y": self.y,
-            "z": self.z
-        }
-        
+        return {"x": self.x, "y": self.y, "z": self.z}
+
+
 class Rotation:
-    __slots__ = ['x', 'y', 'z', 'w', 'pitch', 'yaw', 'roll']
-    
+    __slots__ = ["x", "y", "z", "w", "pitch", "yaw", "roll"]
+
     x: float
     y: float
     z: float
     w: float
-    
+
     pitch: float
     yaw: float
     roll: float
@@ -64,7 +64,7 @@ class Rotation:
         self.y = y
         self.z = z
         self.w = w
-        
+
         self.pitch, self.yaw, self.roll = umath.quat_to_euler([x, y, z, w])
 
     def quat(self) -> list[float]:
@@ -81,11 +81,13 @@ class Rotation:
             "w": self.w,
             "pitch": self.pitch,
             "yaw": self.yaw,
-            "roll": self.roll
+            "roll": self.roll,
         }
+
+
 class Transform:
-    __slots__ = ['x', 'y', 'z', 'rotation']
-    
+    __slots__ = ["x", "y", "z", "rotation"]
+
     x: float
     y: float
     z: float
@@ -104,16 +106,12 @@ class Transform:
         return self.__str__()
 
     def json(self) -> dict:
-        return {
-            "x": self.x,
-            "y": self.y,
-            "z": self.z,
-            "rotation": self.rotation.json()
-        }
-        
+        return {"x": self.x, "y": self.y, "z": self.z, "rotation": self.rotation.json()}
+
+
 class BoundingBox:
-    __slots__ = ['min_x', 'min_y', 'max_x', 'max_y']
-    
+    __slots__ = ["min_x", "min_y", "max_x", "max_y"]
+
     min_x: float
     min_y: float
     max_x: float
@@ -135,7 +133,11 @@ class BoundingBox:
         return Position(self.min_x, self.min_y, 0), Position(self.max_x, self.max_y, 0)
 
     def to_start_width_height(self) -> tuple[Position, float, float]:
-        return Position(self.min_x, self.min_y, 0), self.max_x - self.min_x, self.max_y - self.min_y
+        return (
+            Position(self.min_x, self.min_y, 0),
+            self.max_x - self.min_x,
+            self.max_y - self.min_y,
+        )
 
     def __repr__(self) -> str:
         return self.__str__()
@@ -152,33 +154,34 @@ class BoundingBox:
             "min_x": self.min_x,
             "min_y": self.min_y,
             "max_x": self.max_x,
-            "max_y": self.max_y
+            "max_y": self.max_y,
         }
-        
+
+
 class SpawnPointType(IntEnum):
-    NONE = 0,
-    TrailerPos = 1,
-    UnloadEasyPos = 2,
-    GasPos = 3,
-    ServicePos = 4,
-    TruckStopPos = 5,
-    WeightStationPos = 6,
-    TruckDealerPos = 7,
-    Hotel = 8,
-    Custom = 9,
-    Parking = 10,  # also shows parking in companies which don't work/show up in game
-    Task = 11,
-    MeetPos = 12,
-    CompanyPos = 13,
-    GaragePos = 14,  # manage garage
-    BuyPos = 15,  # buy garage
-    RecruitmentPos = 16,
-    CameraPoint = 17,
-    BusStation = 18,
-    UnloadMediumPos = 19,
-    UnloadHardPos = 20,
-    UnloadRigidPos = 21,
-    WeightCatPos = 22,
-    CompanyUnloadPos = 23,
-    TrailerSpawn = 24,
-    LongTrailerPos = 25,
+    NONE = (0,)
+    TrailerPos = (1,)
+    UnloadEasyPos = (2,)
+    GasPos = (3,)
+    ServicePos = (4,)
+    TruckStopPos = (5,)
+    WeightStationPos = (6,)
+    TruckDealerPos = (7,)
+    Hotel = (8,)
+    Custom = (9,)
+    Parking = (10,)  # also shows parking in companies which don't work/show up in game
+    Task = (11,)
+    MeetPos = (12,)
+    CompanyPos = (13,)
+    GaragePos = (14,)  # manage garage
+    BuyPos = (15,)  # buy garage
+    RecruitmentPos = (16,)
+    CameraPoint = (17,)
+    BusStation = (18,)
+    UnloadMediumPos = (19,)
+    UnloadHardPos = (20,)
+    UnloadRigidPos = (21,)
+    WeightCatPos = (22,)
+    CompanyUnloadPos = (23,)
+    TrailerSpawn = (24,)
+    LongTrailerPos = (25,)

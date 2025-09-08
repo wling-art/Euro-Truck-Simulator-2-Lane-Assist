@@ -1,9 +1,10 @@
 import psutil
 
+
 def read_memory_usage() -> float:
     """
     Reads the current memory usage of the process in megabytes.
-    
+
     Returns:
         float: Memory usage in MB.
     """

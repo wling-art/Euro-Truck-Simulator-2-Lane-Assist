@@ -1,12 +1,18 @@
 import math
 from Plugins.DataProvider.classes.base_item import BaseItem, ItemType
-from Plugins.DataProvider.classes.general import SpawnPointType, Transform, Position, BoundingBox
+from Plugins.DataProvider.classes.general import (
+    SpawnPointType,
+    Transform,
+    Position,
+    BoundingBox,
+)
 from Plugins.DataProvider.classes.map_points import RoadMapPoint, PolygonMapPoint
 from typing import Literal
 
+
 class PrefabNode:
-    __slots__ = ['x', 'y', 'z', 'rotation', 'input_lanes', 'output_lanes']
-    
+    __slots__ = ["x", "y", "z", "rotation", "input_lanes", "output_lanes"]
+
     x: float
     y: float
     z: float
@@ -16,7 +22,15 @@ class PrefabNode:
     output_lanes: list[int]
     """indices into nav_curves"""
 
-    def __init__(self, x: float, y: float, z: float, rotation: float, input_lanes: list[int], output_lanes: list[int]):
+    def __init__(
+        self,
+        x: float,
+        y: float,
+        z: float,
+        rotation: float,
+        input_lanes: list[int],
+        output_lanes: list[int],
+    ):
         self.x = x
         self.y = y
         self.z = z
@@ -31,13 +45,13 @@ class PrefabNode:
             "z": self.z,
             "rotation": self.rotation,
             "input_lanes": self.input_lanes,
-            "output_lanes": self.output_lanes
+            "output_lanes": self.output_lanes,
         }
 
 
 class PrefabSpawnPoints:
-    __slots__ = ['x', 'y', 'z', 'type']
-    
+    __slots__ = ["x", "y", "z", "type"]
+
     x: float
     y: float
     z: float
@@ -50,17 +64,12 @@ class PrefabSpawnPoints:
         self.type = type
 
     def json(self) -> dict:
-        return {
-            "x": self.x,
-            "y": self.y,
-            "z": self.z,
-            "type": self.type
-        }
+        return {"x": self.x, "y": self.y, "z": self.z, "type": self.type}
 
 
 class PrefabTriggerPoint:
-    __slots__ = ['x', 'y', 'z', 'action']
-    
+    __slots__ = ["x", "y", "z", "action"]
+
     x: float
     y: float
     z: float
@@ -73,17 +82,20 @@ class PrefabTriggerPoint:
         self.action = action
 
     def json(self) -> dict:
-        return {
-            "x": self.x,
-            "y": self.y,
-            "z": self.z,
-            "action": self.action
-        }
+        return {"x": self.x, "y": self.y, "z": self.z, "action": self.action}
 
 
 class PrefabNavCurve:
-    __slots__ = ['nav_node_index', 'start', 'end', 'next_lines', 'prev_lines', 'semaphore_id', '_points']
-    
+    __slots__ = [
+        "nav_node_index",
+        "start",
+        "end",
+        "next_lines",
+        "prev_lines",
+        "semaphore_id",
+        "_points",
+    ]
+
     nav_node_index: int
     start: Transform
     end: Transform
@@ -92,8 +104,16 @@ class PrefabNavCurve:
     semaphore_id: int
     _points: list[Position]
 
-    def __init__(self, nav_node_index: int, start: Transform, end: Transform, next_lines: list[int],
-                 prev_lines: list[int], semaphore_id: int, points: list[Position] = []):
+    def __init__(
+        self,
+        nav_node_index: int,
+        start: Transform,
+        end: Transform,
+        next_lines: list[int],
+        prev_lines: list[int],
+        semaphore_id: int,
+        points: list[Position],
+    ):
         self.nav_node_index = nav_node_index
         self.start = start
         self.end = end
@@ -101,20 +121,20 @@ class PrefabNavCurve:
         self.prev_lines = prev_lines
         self.semaphore_id = semaphore_id
         self._points = points
-    
+
     @property
     def points(self) -> list[Position]:
         # if self._points == []:
         #     self._points = self.generate_points()
         return self._points
-    
+
     @points.setter
     def points(self, value: list[Position]):
         self._points = value
 
     # def generate_points(self, road_quality: float = 1, min_quality: int = 4) -> list[Position]:
     #     new_points = []
-# 
+    #
     #     # Data has Z as the height value, but we need Y
     #     sx = self.start.x
     #     sy = self.start.z
@@ -122,15 +142,15 @@ class PrefabNavCurve:
     #     ex = self.end.x
     #     ey = self.end.z
     #     ez = self.end.y
-    #     
+    #
     #     length = math.sqrt(math.pow(sx - ex, 2) + math.pow(sy - ey, 2) + math.pow(sz - ez, 2))
     #     radius = math.sqrt(math.pow(sx - ex, 2) + math.pow(sz - ez, 2))
-# 
+    #
     #     tan_sx = math.cos((self.start.rotation)) * radius
     #     tan_ex = math.cos((self.end.rotation)) * radius
     #     tan_sz = math.sin((self.start.rotation)) * radius
     #     tan_ez = math.sin((self.end.rotation)) * radius
-# 
+    #
     #     needed_points = int(length * road_quality)
     #     if needed_points < min_quality:
     #         needed_points = min_quality
@@ -140,31 +160,31 @@ class PrefabNavCurve:
     #         y = sy + (ey - sy) * s
     #         z = math_helpers.Hermite(s, sz, ez, tan_sz, tan_ez)
     #         new_points.append(Position(x, y, z))
-# 
+    #
     #     return new_points
-# 
+    #
     # def convert_to_relative(self, origin_node: Node, map_point_origin: PrefabNode):
     #     prefab_start_x = origin_node.x - map_point_origin.x
     #     prefab_start_y = origin_node.z - map_point_origin.z
     #     prefab_start_z = origin_node.y - map_point_origin.y
-# 
+    #
     #     rot = float(origin_node.rotation - map_point_origin.rotation)
-# 
+    #
     #     new_start_pos = math_helpers.RotateAroundPoint(self.start.x + prefab_start_x, self.start.z + prefab_start_z,
     #                                                    rot, origin_node.x, origin_node.y)
     #     new_start = Transform(new_start_pos[0], self.start.y + prefab_start_y, new_start_pos[1],
     #                           self.start.rotation + rot)
-# 
+    #
     #     new_end_pos = math_helpers.RotateAroundPoint(self.end.x + prefab_start_x, self.end.z + prefab_start_z, rot,
     #                                                  origin_node.x, origin_node.y)
     #     new_end = Transform(new_end_pos[0], self.end.y + prefab_start_y, new_end_pos[1], self.end.rotation + rot)
-# 
+    #
     #     new_points: list[Position] = []
     #     for point in self.points:
     #         new_point_pos = math_helpers.RotateAroundPoint(point.x + prefab_start_x, point.z + prefab_start_z, rot,
     #                                                        origin_node.x, origin_node.y)
     #         new_points.append(Position(new_point_pos[0], point.y + prefab_start_y, new_point_pos[1]))
-# 
+    #
     #     return PrefabNavCurve(self.nav_node_index, new_start, new_end, self.next_lines, self.prev_lines, self.semaphore_id,
     #                           points=new_points)
 
@@ -176,13 +196,13 @@ class PrefabNavCurve:
             "next_lines": self.next_lines,
             "prev_lines": self.prev_lines,
             "semaphore_id": self.semaphore_id,
-            "points": [point.json() for point in self.points]
+            "points": [point.json() for point in self.points],
         }
 
 
 class NavNodeConnection:
-    __slots__ = ['target_nav_node_index', 'curve_indeces']
-    
+    __slots__ = ["target_nav_node_index", "curve_indeces"]
+
     target_nav_node_index: int
     curve_indeces: list[int]
 
@@ -193,13 +213,13 @@ class NavNodeConnection:
     def json(self) -> dict:
         return {
             "target_nav_node_index": self.target_nav_node_index,
-            "curve_indeces": self.curve_indeces
+            "curve_indeces": self.curve_indeces,
         }
 
 
 class PrefabNavNode:
-    __slots__ = ['type', 'end_index', 'connections']
-    
+    __slots__ = ["type", "end_index", "connections"]
+
     type: Literal["physical", "ai"]
     """
     **physical**: the index of the normal node (see nodes array) this navNode ends at.\n
@@ -208,7 +228,12 @@ class PrefabNavNode:
     end_index: int
     connections: list[NavNodeConnection]
 
-    def __init__(self, type: Literal["physical", "ai"], end_index: int, connections: list[NavNodeConnection]):
+    def __init__(
+        self,
+        type: Literal["physical", "ai"],
+        end_index: int,
+        connections: list[NavNodeConnection],
+    ):
         self.type = type
         self.end_index = end_index
         self.connections = connections
@@ -217,13 +242,13 @@ class PrefabNavNode:
         return {
             "type": self.type,
             "end_index": self.end_index,
-            "connections": [connection.json() for connection in self.connections]
+            "connections": [connection.json() for connection in self.connections],
         }
 
 
 class PrefabNavRoute:
-    __slots__ = ['curves', 'distance', '_points', 'prefab']
-    
+    __slots__ = ["curves", "distance", "_points", "prefab"]
+
     curves: list[PrefabNavCurve]
     distance: float
     _points: list[Position]
@@ -233,7 +258,7 @@ class PrefabNavRoute:
         self._points = []
         self.curves = curves
         self.prefab = None
-        
+
     @property
     def points(self):
         if self._points == []:
@@ -246,11 +271,11 @@ class PrefabNavRoute:
 
     # def generate_points(self, prefab=None) -> list[Position]:
     #     self.prefab = prefab
-    #     
+    #
     #     new_points = []
     #     for curve in self.curves:
     #         new_points += curve.points
-# 
+    #
     #     min_distance = 0.25
     #     last_point = new_points[0]
     #     accepted_points = [new_points[0]]
@@ -258,15 +283,15 @@ class PrefabNavRoute:
     #         if math_helpers.DistanceBetweenPoints(point.tuple(), last_point.tuple()) > min_distance:
     #             accepted_points.append(point)
     #             last_point = point
-# 
+    #
     #     new_points = accepted_points
-# 
+    #
     #     distance = 0
     #     for i in range(len(new_points) - 1):
     #         distance += math.sqrt(
     #             math.pow(new_points[i].x - new_points[i + 1].x, 2) + math.pow(new_points[i].z - new_points[i + 1].z, 2))
     #     self.distance = distance
-    #      
+    #
     #     if type(prefab) == Prefab:
     #         start_node = None
     #         start_distance = math.inf
@@ -276,37 +301,37 @@ class PrefabNavRoute:
     #             node = data.map.get_node_by_uid(node)
     #             node_distance_start = math_helpers.DistanceBetweenPoints((node.x, node.y), (new_points[0].x, new_points[0].z))
     #             node_distance_end = math_helpers.DistanceBetweenPoints((node.x, node.y), (new_points[-1].x, new_points[-1].z))
-    #             
+    #
     #             if node_distance_start < start_distance:
     #                 start_distance = node_distance_start
     #                 start_node = node
     #             if node_distance_end < end_distance:
     #                 end_distance = node_distance_end
     #                 end_node = node
-    #                 
+    #
     #         start_offset = 0
     #         end_offset = 0
-    #         
+    #
     #         if start_node is not None:
     #             start_offset = start_node.z - new_points[0].y
     #             if start_offset < 0.001 and start_offset > -0.001:
     #                 start_offset = 0
-    #                 
+    #
     #         if end_node is not None:
-    #             end_offset = end_node.z - new_points[-1].y    
+    #             end_offset = end_node.z - new_points[-1].y
     #             if end_offset < 0.001 and end_offset > -0.001:
     #                 end_offset = 0
-    #         
+    #
     #         def interpolate_y(y1, y2, t):
     #             return y1 + (y2 - y1) * t
-    #         
+    #
     #         if start_offset != 0 or end_offset != 0:
     #             accepted_points = []
     #             for i, point in enumerate(new_points):
     #                 accepted_points.append(Position(point.x, point.y + interpolate_y(start_offset, end_offset, i / len(new_points)), point.z))
-    #             
+    #
     #             return accepted_points
-# 
+    #
     #     return new_points
 
     # def generate_relative_curves(self, origin_node: Node, map_point_origin) -> list[PrefabNavCurve]:
@@ -319,8 +344,9 @@ class PrefabNavRoute:
         return {
             # "curves": [curve.json() for curve in self.curves],
             "points": [point.json() for point in self.points],
-            "distance": self.distance
+            "distance": self.distance,
         }
+
 
 class Semaphore:
     __slots__ = ["x", "y", "z", "rotation", "type", "id"]
@@ -330,8 +356,10 @@ class Semaphore:
     rotation: float
     type: str
     id: int
-    
-    def __init__(self, x: float, y: float, z: float, rotation: float, type: str, id: int):
+
+    def __init__(
+        self, x: float, y: float, z: float, rotation: float, type: str, id: int
+    ):
         self.x = x
         self.y = y
         self.z = z
@@ -346,12 +374,23 @@ class Semaphore:
             "z": self.z,
             "rotation": self.rotation,
             "type": self.type,
-            "id": self.id
+            "id": self.id,
         }
 
+
 class PrefabDescription:
-    __slots__ = ['token', 'nodes', 'map_points', 'spawn_points', 'trigger_points', 'nav_curves', 'nav_nodes', 'semaphores', '_nav_routes']
-    
+    __slots__ = [
+        "token",
+        "nodes",
+        "map_points",
+        "spawn_points",
+        "trigger_points",
+        "nav_curves",
+        "nav_nodes",
+        "semaphores",
+        "_nav_routes",
+    ]
+
     token: str
     nodes: list[PrefabNode]
     map_points: list[RoadMapPoint | PolygonMapPoint]
@@ -362,9 +401,16 @@ class PrefabDescription:
     semaphores: list[Semaphore]
     _nav_routes: list[PrefabNavRoute]
 
-    def __init__(self, token: str, nodes: list[PrefabNode], map_points: list[RoadMapPoint | PolygonMapPoint],
-                 spawn_points: list[PrefabSpawnPoints], trigger_points: list[PrefabTriggerPoint],
-                 nav_curves: list[PrefabNavCurve], semaphores: list[Semaphore] | None = None):
+    def __init__(
+        self,
+        token: str,
+        nodes: list[PrefabNode],
+        map_points: list[RoadMapPoint | PolygonMapPoint],
+        spawn_points: list[PrefabSpawnPoints],
+        trigger_points: list[PrefabTriggerPoint],
+        nav_curves: list[PrefabNavCurve],
+        semaphores: list[Semaphore] | None = None,
+    ):
         self._nav_routes = []
         self.token = token
         self.nodes = nodes
@@ -403,13 +449,23 @@ class PrefabDescription:
             "trigger_points": [trigger.json() for trigger in self.trigger_points],
             "nav_curves": [curve.json() for curve in self.nav_curves],
             "nav_routes": [route.json() for route in self.nav_routes],
-            "semaphores": [semaphore.json() for semaphore in self.semaphores]
+            "semaphores": [semaphore.json() for semaphore in self.semaphores],
         }
 
 
 class Prefab(BaseItem):
-    __slots__ = ['hidden', 'token', 'node_uids', 'origin_node_index', 'type', 'description', 'z', '_nav_routes', '_bounding_box']
-    
+    __slots__ = [
+        "hidden",
+        "token",
+        "node_uids",
+        "origin_node_index",
+        "type",
+        "description",
+        "z",
+        "_nav_routes",
+        "_bounding_box",
+    ]
+
     hidden: bool
     token: str
     node_uids: list[str]
@@ -420,8 +476,17 @@ class Prefab(BaseItem):
     _nav_routes: list[PrefabNavRoute]
     _bounding_box: BoundingBox
 
-    def __init__(self, uid: str, x: float, y: float, z: float,
-                 hidden: bool | None, token: str, node_uids: list[str], origin_node_index: int):
+    def __init__(
+        self,
+        uid: str,
+        x: float,
+        y: float,
+        z: float,
+        hidden: bool | None,
+        token: str,
+        node_uids: list[str],
+        origin_node_index: int,
+    ):
         super().__init__(uid, ItemType.Prefab, x, y)
         self.type = ItemType.Prefab
         self.description = None
@@ -440,7 +505,7 @@ class Prefab(BaseItem):
     #             route.generate_relative_curves(data.map.get_node_by_uid(self.node_uids[0]),
     #                                            self.prefab_description.nodes[self.origin_node_index])
     #         ))
-# 
+    #
     #     for route in self._nav_routes:
     #         route.generate_points(self)
 
@@ -501,5 +566,5 @@ class Prefab(BaseItem):
             # "origin_node": data.map.get_node_by_uid(self.node_uids[self.origin_node_index]).json(),
             "nav_routes": [route.json() for route in self.nav_routes],
             "bounding_box": self.bounding_box.json(),
-            "description": self.description.json() if self.description else None
+            "description": self.description.json() if self.description else None,
         }

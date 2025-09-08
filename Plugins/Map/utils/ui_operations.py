@@ -114,8 +114,7 @@ def trigger_data_update(plugin_instance):
 
 
 def use_auto_offset():
-    """Toggle the use of auto offset.
-    """
+    """Toggle the use of auto offset."""
     try:
         data.plugin.state.text = "Updating per_name data..."
         logging.warning("Updating per_name data...")

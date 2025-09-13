@@ -112,7 +112,7 @@ class PrefabNavCurve:
         next_lines: list[int],
         prev_lines: list[int],
         semaphore_id: int,
-        points: list[Position],
+        points: list[Position] = None,
     ):
         self.nav_node_index = nav_node_index
         self.start = start
@@ -120,7 +120,7 @@ class PrefabNavCurve:
         self.next_lines = next_lines
         self.prev_lines = prev_lines
         self.semaphore_id = semaphore_id
-        self._points = points
+        self._points = points or []
 
     @property
     def points(self) -> list[Position]:
